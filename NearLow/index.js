@@ -1,8 +1,8 @@
 const util = require("../utilities");
 module.exports = async function (context, req) {
-  const rsiData = await util.getRSI()
+  const nearLow = await util.getNearLow()
   context.res = {
-    body: rsiData,
+    body: nearLow,
   };
   context.done();
 };
