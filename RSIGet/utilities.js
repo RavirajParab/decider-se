@@ -3,3 +3,7 @@ const getRSI=async (url)=>{
     const ParsedData = await unParsed.json();
     return ParsedData;
 }
+
+module.exports={
+    getRSI
+}
