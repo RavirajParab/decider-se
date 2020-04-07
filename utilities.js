@@ -63,9 +63,58 @@ const getDividends = async () => {
   return DivDataFinal;
 };
 
+const getMMI = async () => {
+  const RawMMIData = await fetch("https://api.tickertape.in/mmi/now");
+  const MMIData = await RawMMIData.json();
+
+  let data = MMIData.data;
+  let Current =
+    data.daily[0].value.toFixed(2) +
+    " - " +
+    ShowGreedAndFearLevel(data.daily[0].value);
+  let Yesterday =
+    data.lastDay.indicator.toFixed(2) +
+    " - " +
+    ShowGreedAndFearLevel(data.lastDay.indicator);
+  let LastWeek =
+    data.lastWeek.indicator.toFixed(2) +
+    " - " +
+    ShowGreedAndFearLevel(data.lastWeek.indicator);
+  let LastMonth =
+    data.lastMonth.indicator.toFixed(2) +
+    " - " +
+    ShowGreedAndFearLevel(data.lastMonth.indicator);
+  let LastYear =
+    data.lastYear.indicator.toFixed(2) +
+    " - " +
+    ShowGreedAndFearLevel(data.lastYear.indicator);
+  return {
+    Current,
+    Yesterday,
+    LastWeek,
+    LastMonth,
+    LastYear,
+  };
+};
+
+const ShowGreedAndFearLevel=(MMILevel)=>{
+    if(MMILevel>=70){
+        return 'Extreme Greed';
+    }else if(MMILevel>52 && MMILevel<70){
+        return 'Greed';
+    }else if(MMILevel>=48 && MMILevel<=52){
+        return 'Neutral';
+    }else if(MMILevel<48 && MMILevel>=29){
+        return 'Fear';
+    }else{
+        return 'Extreme Fear';
+    }
+}  
+
 module.exports = {
   getRSI,
   getNearLow,
   getAVD,
-  getDividends
+  getDividends,
+  getMMI,
 };
