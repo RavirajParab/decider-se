@@ -24,20 +24,27 @@ const getRSI = async () => {
   return AgreggatedData;
 };
 
-const getNearLow= async ()=>{
-  const url='https://etmarketsapis.indiatimes.com/ET_Stats/near52weekslow?pagesize=5000&exchange=nse&pageno=1&sortby=current&sortorder=desc&marketcap=largecap%2Cmidcap';
-  const nearLowPromise=await fetch(url);
-  const nearLowData=await nearLowPromise.json();
-  const nearLow=nearLowData.searchresult.map(i=>{
-    return{
-      'Name':i.nseScripCode,
-    }
-  });
-  const RSISelected=RSI_ALL.filter(i=>(nearLow.findIndex(j=>j.Name==i.scripCode)>-1));
-  return RSISelected;
-}
+const getNearLow = async () => {
+  const url =
+    "https://etmarketsapis.indiatimes.com/ET_Stats/near52weekslow?pagesize=5000&exchange=nse&pageno=1&sortby=current&sortorder=desc&marketcap=largecap%2Cmidcap";
+  const nearLowPromise = await fetch(url);
+  const nearLowData = await nearLowPromise.json();
+  return nearLowData;
+};
+
+const getAVD = async () => {
+  const url =
+    "https://etmarketsapis.indiatimes.com/ET_Stats/getAllIndices?exchange=nse&sortby=value&sortorder=desc&pagesize=5000";
+  const AVDPromise = await fetch(url);
+  const AVDData = await AVDPromise.json();
+  const AVD = AVDData.searchresult.find((i) => i.indexName == "Nifty 200");
+  const AVDRatio =
+    ((Number(AVD.advances) * 100) / 200).toFixed(2) + "% Bullish";
+  return AVDRatio;
+};
 
 module.exports = {
   getRSI,
-  getNearLow
+  getNearLow,
+  getAVD
 };
