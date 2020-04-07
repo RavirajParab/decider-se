@@ -1,6 +1,6 @@
-const util = require("../utilities");
+const {getNearLow} = require("../utilities");
 module.exports = async function (context, req) {
-  const nearLow = await util.getNearLow()
+  const nearLow = await getNearLow()
   context.res = {
     body: nearLow,
   };

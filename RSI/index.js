@@ -1,6 +1,6 @@
-const util = require("../utilities");
+const {getRSI} = require("../utilities");
 module.exports = async function (context, req) {
-  const rsiData = await util.getRSI()
+  const rsiData = await getRSI()
   context.res = {
     body: rsiData,
   };
