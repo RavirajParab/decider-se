@@ -1,10 +1,8 @@
 const util = require("../utilities");
 module.exports = async function (context, req) {
-  const RSIdata = await util.getRSI(
-    "https://sas.indiatimes.com/TechnicalsClient/getRSI.htm?crossovertype=RSI_BETWEEN_20_AND_30&pagesize=500"
-  );
+  const rsiData = await util.getRSI()
   context.res = {
-    body: { data: RSIdata },
+    body: { data: rsiData },
   };
   context.done();
 };
