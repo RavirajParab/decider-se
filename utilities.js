@@ -43,8 +43,29 @@ const getAVD = async () => {
   return AVDRatio;
 };
 
+const getDividends = async () => {
+  const url =
+    "https://etmarketsapis.indiatimes.com/ET_Stats/dividend?pagesize=500&pageno=1&sortby=xdDateStr&sortorder=asc&companyid=0&year=0&filtertype=latest&duration=U&marketcap=All";
+  const DivPromise = await fetch(url);
+  const DivData = await DivPromise.json();
+  const DivDataFinal = DivData.searchresult
+    .map((i) => {
+      return {
+        CompanyID: Number(i.companyId),
+        DPS: i.value,
+        Ex: i.xdDateStr,
+        DivPerc: Number(
+          ((Number(i.value) * 100) / Number(i.current)).toFixed(2)
+        ),
+      };
+    })
+    .sort((j, k) => j.CompanyID - k.CompanyID);
+  return DivDataFinal;
+};
+
 module.exports = {
   getRSI,
   getNearLow,
-  getAVD
+  getAVD,
+  getDividends
 };
