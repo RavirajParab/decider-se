@@ -235,13 +235,26 @@ const TopCompanies = [
 ];
 
 const getAllCompaniesReboundRates = async () => {
+  const liveQuotes= await getLiveQuotes();
   const allratesPromise = TopCompanies.map(
     async (sec) => await getSecReboundrate(sec, 120, 3.5)
   );
   const rates = await Promise.all(allratesPromise);
   const orderedRates = rates.filter((i) => i.reboundRate >= 80)
                             .sort((b,a)=>a.reboundRate-b.reboundRate);
-  return orderedRates;
+
+   const compositeData = orderedRates.map(i=>{
+    const quote = liveQuotes.filter(j=>j.sid===i.security);
+    return{
+        ...i,
+        price : quote[0].price,
+        Open : quote[0].o,
+        High : quote[0].h,
+        Low : quote[0].l,
+        Close :quote[0].c
+    }
+  });
+  return compositeData;
 };
 
 
@@ -313,6 +326,19 @@ const getGainRankings = async ()=>{
   const data =await getRankings(20);
   const sortedData = data.sort((a,b)=>a.Gain-b.Gain);
   return sortedData;
+}
+
+const getLiveQuotes=async ()=>{
+  const url=`https://quotes-api.tickertape.in/quotes?sids=RELI,WIPR,LART,BAJA,SUN,TCS,MRTI,SBI,ASPN,BRTI,HDBK,AXBK,INFY,CIPL,HALC,SHCM,INBK,ULTC,TEML,BRIT,HROM,GRAS,ONGC,GAIL,NTPC,COAL,NEST,TITN,MAHM,BJFS,ZEE,HLL,HDFC,KTKM,ICBK,ITC`;
+  const resprom = await fetch(url);
+  const res = await resprom.json(); 
+  const liveQuotes = res.data.map((i,k)=>{
+      return{
+          ...i,
+          sid : TopCompanies[k]
+      }
+  });
+ return liveQuotes;
 }
 
 module.exports = {
