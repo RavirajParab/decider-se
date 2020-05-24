@@ -292,7 +292,7 @@ const getSecReboundrate = async (security, noOfDays, fallPercentage) => {
     reboundRate,
     validity: noOfDays,
     oppurtionities: gainers.length,
-   // data :gainers,  //uncomment if you need the data of the days and dates
+    data :gainers,  //uncomment if you need the data of the days and dates
     maxfallRate,
     minfallRate,
     avgFallRate,
