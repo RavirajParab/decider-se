@@ -246,12 +246,16 @@ const getAllCompaniesReboundRates = async () => {
    const compositeData = orderedRates.map(i=>{
     const quote = liveQuotes.filter(j=>j.sid===i.security);
     return{
-        ...i,
-        price : quote[0].price,
-        Open : quote[0].o,
-        High : quote[0].h,
-        Low : quote[0].l,
-        Close :quote[0].c
+      ...i,
+      Price : quote[0].price,
+      Open : quote[0].o,
+      High : quote[0].h,
+      Low : quote[0].l,
+      PrevClose :quote[0].c,
+      Buy1: Math.round((100-i.minfallRate)*quote[0].o/100),
+      Buy2: Math.round((100-i.avgFallRate)*quote[0].o/100),
+      Buy3: Math.round((100-i.maxfallRate)*quote[0].o/100),
+      Change:Number(((quote[0].price-quote[0].o)*100/quote[0].o).toFixed(2))
     }
   });
   return compositeData;
@@ -292,7 +296,7 @@ const getSecReboundrate = async (security, noOfDays, fallPercentage) => {
     reboundRate,
     validity: noOfDays,
     oppurtionities: gainers.length,
-    data :gainers,  //uncomment if you need the data of the days and dates
+    //data :gainers,  //uncomment if you need the data of the days and dates
     maxfallRate,
     minfallRate,
     avgFallRate,
