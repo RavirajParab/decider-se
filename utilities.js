@@ -113,11 +113,16 @@ const getUrl = (security, noOfDays) => {
 };
 
 const getGain = (data) => {
-  const length = data.length;
-  const oldClosing = data[0].Close;
-  const newClosing = data[length - 1].Close;
-  const gain = Math.round(((newClosing - oldClosing) * 100) / newClosing);
-  return gain;
+  if(data[0]){
+    const length = data.length;
+    const oldClosing = data[0].Close;
+    const newClosing = data[length - 1].Close;
+    const gain = Math.round(((newClosing - oldClosing) * 100) / newClosing);
+    return gain;
+  }else{
+    return NaN;
+  }
+ 
 };
 
 const getSecDataForDays = async (securityName, noOfDays) => {
