@@ -290,6 +290,13 @@ const getSecReboundrate = async (security, noOfDays, fallPercentage) => {
       }
     }
   });
+
+  const getSecRSI=async ()=>{
+    console.log('hit');
+    const data = await getSecDataForDays('INFY', 18);
+    return data;
+  }
+  getSecRSI().then(d=>console.log(d));
   
   //passing and failing % evaluator
   const gainers = filteredData.filter((i) => i.NextDayMxGain > 1);
