@@ -224,7 +224,7 @@ const TopCompanies = [
   "COALINDIA",
   "NESTLEIND",
   "TITAN",
-  "MM",
+  "M&M",
   "BAJAJFINSV",
   "ZEEL",
   "HINDUNILVR",
@@ -252,6 +252,7 @@ const getAllCompaniesReboundRates = async () => {
       High : quote[0].h,
       Low : quote[0].l,
       PrevClose :quote[0].c,
+      SellFor : (Math.round((1.01)*quote[0].price)).toFixed(2),
       Buy1: Math.round((100-i.minfallRate)*quote[0].o/100),
       Buy2: Math.round((100-i.avgFallRate)*quote[0].o/100),
       Buy3: Math.round((100-i.maxfallRate)*quote[0].o/100),
@@ -345,11 +346,20 @@ const getLiveQuotes=async ()=>{
  return liveQuotes;
 }
 
+const getQuote=async (sid)=>{
+  const url=`https://quotes-api.tickertape.in/quotes?sids=${sid}`;
+  const resprom = await fetch(url);
+  const res = await resprom.json(); 
+ //return res.data;
+   return sid;
+}
+
 module.exports = {
   getRSI,
   getNearLow,
   getAVD,
   getMMI,
   getGainRankings,
+  getQuote,
   getAllCompaniesReboundRates
 };
