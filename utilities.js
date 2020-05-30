@@ -132,12 +132,13 @@ const getSecDataForDays = async (securityName, noOfDays) => {
   return csvJSON(text);
 };
 
-const getTopCompanies = async () => {
-  const url = getUrl(`https://www1.nseindia.com/content/indices/ind_nifty200list.csv`);
+const getTop200Companies = async () => {
+  const url = `https://www1.nseindia.com/content/indices/ind_nifty200list.csv`;
   const response = await fetch(url);
   const text = await response.text();
   return csvJSON(text);
 };
+
 
 const invertedGreenHammer = (data) => {
   const candleWidth = data.Close - data.Open;
@@ -367,6 +368,6 @@ module.exports = {
   getMMI,
   getGainRankings,
   getQuote,
-  getTopCompanies,
+  getTop200Companies,
   getAllCompaniesReboundRates
 };

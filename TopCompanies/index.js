@@ -1,6 +1,6 @@
-const {getTopCompanies} = require("../utilities");
+const {getTop200Companies} = require("../utilities");
 module.exports = async function (context, req) {
-  const companies = await getTopCompanies()
+  const companies = await getTop200Companies()
   context.res = {
     body: companies
   };
