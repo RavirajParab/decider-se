@@ -132,6 +132,13 @@ const getSecDataForDays = async (securityName, noOfDays) => {
   return csvJSON(text);
 };
 
+const getTopCompanies = async () => {
+  const url = getUrl(`https://www1.nseindia.com/content/indices/ind_nifty200list.csv`);
+  const response = await fetch(url);
+  const text = await response.text();
+  return csvJSON(text);
+};
+
 const invertedGreenHammer = (data) => {
   const candleWidth = data.Close - data.Open;
   const totalWidth = data.High - data.Low;
@@ -346,12 +353,11 @@ const getLiveQuotes=async ()=>{
  return liveQuotes;
 }
 
-const getQuote=async (sid)=>{
-  const url=`https://quotes-api.tickertape.in/quotes?sids=${sid}`;
+const getQuote=async (req)=>{
+  const url=`https://quotes-api.tickertape.in/quotes?sids=${req.query.sid}`;
   const resprom = await fetch(url);
   const res = await resprom.json(); 
- //return res.data;
-   return sid;
+  return res.data;
 }
 
 module.exports = {
@@ -361,5 +367,6 @@ module.exports = {
   getMMI,
   getGainRankings,
   getQuote,
+  getTopCompanies,
   getAllCompaniesReboundRates
 };
