@@ -296,6 +296,7 @@ const getSecReboundrate = async (security, noOfDays, fallPercentage) => {
     const data = await getSecDataForDays('INFY', 18);
     return data;
   }
+  console.log('test');
   getSecRSI().then(d=>console.log(d));
   
   //passing and failing % evaluator
