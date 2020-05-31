@@ -255,18 +255,19 @@ const getSecRSI=async (symbol)=>{
     period:14
   }
   const currentData=data[14];
-  return {
-    'Symbol': symbol,
-    'RSI':RSI.calculate(inputRSI)[0],
-    'Date':currentData.Date,
-    'Open':currentData.Open,
-    'Close':currentData.Close,
-    'Low':currentData.Low,
-    'High':currentData.High,
-    'Volume':currentData.Volume
+  if(currentData){
+    return {
+      'Symbol': symbol,
+      'RSI':RSI.calculate(inputRSI)[0],
+      'Date':currentData.Date,
+       'Open':currentData.Open,
+       'Close':currentData.Close,
+       'Low':currentData.Low,
+       'High':currentData.High,
+       'Volume':currentData.Volume
+    }
   }
 }
-
 
 const getRSIForAllTopCompanies=async ()=>{
   const allTop200Companies = await getTop200Companies();
@@ -321,6 +322,7 @@ const getQuote=async (req)=>{
   const res = await resprom.json(); 
   return res.data;
 }
+
 
 module.exports = {
   getRSI,
