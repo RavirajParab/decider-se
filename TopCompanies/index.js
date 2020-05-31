@@ -1,6 +1,6 @@
-const {getTop200Companies} = require("../utilities");
+const {getRSIForAllTopCompanies} = require("../utilities");
 module.exports = async function (context, req) {
-  const companies = await getTop200Companies()
+  const companies = await getRSIForAllTopCompanies()
   context.res = {
     body: companies
   };

@@ -1,4 +1,6 @@
 const fetch = require("node-fetch");
+const {RSI} = require('technicalindicators');
+
 const RSIAllUrls = [
   "https://sas.indiatimes.com/TechnicalsClient/getRSI.htm?crossovertype=RSI_BELOW_20&pagesize=500",
   "https://sas.indiatimes.com/TechnicalsClient/getRSI.htm?crossovertype=RSI_BETWEEN_20_AND_30&pagesize=500",
@@ -242,85 +244,36 @@ const TopCompanies = [
   "ITC",
 ];
 
-const getAllCompaniesReboundRates = async () => {
-  const liveQuotes= await getLiveQuotes();
-  const allratesPromise = TopCompanies.map(
-    async (sec) => await getSecReboundrate(sec, 120, 3.5)
-  );
-  const rates = await Promise.all(allratesPromise);
-  const orderedRates = rates.filter((i) => i.reboundRate >= 80)
-                            .sort((b,a)=>a.reboundRate-b.reboundRate);
 
-   const compositeData = orderedRates.map(i=>{
-    const quote = liveQuotes.filter(j=>j.sid===i.security);
-    return{
-      ...i,
-      Price : quote[0].price,
-      Open : quote[0].o,
-      High : quote[0].h,
-      Low : quote[0].l,
-      PrevClose :quote[0].c,
-      SellFor : (Math.round((1.01)*quote[0].price)).toFixed(2),
-      Buy1: Math.round((100-i.minfallRate)*quote[0].o/100),
-      Buy2: Math.round((100-i.avgFallRate)*quote[0].o/100),
-      Buy3: Math.round((100-i.maxfallRate)*quote[0].o/100),
-      Change:Number(((quote[0].price-quote[0].o)*100/quote[0].o).toFixed(2))
-    }
-  });
-  return compositeData;
-};
-
-
-const getSecReboundrate = async (security, noOfDays, fallPercentage) => {
-  const data = await getSecDataForDays(security, noOfDays);
-  const filteredData = [];
-  data.forEach((i, k) => {
-    const todayGain = ((i.Open - i.Close) * 100) / i.Open;
-    if (todayGain >= fallPercentage) {
-      if (k < data.length - 1) {
-        filteredData.push({
-          ...i,
-          NextDayHigh: data[k + 1].High,
-          NextDate: data[k + 1].Date,
-          NextDayOpen : data[k + 1].Open,
-          WorstfallRate :(Math.round(i.Open-i.Low)/i.Open)*100,
-          NextDayOpensLower :data[k + 1].Open<i.Close?true:false,
-          NextDayMxGain: ((data[k + 1].High - i.Close) * 100) / i.Close,
-        });
-      }
-    }
-  });
-
-  const getSecRSI=async ()=>{
-    console.log('hit');
-    const data = await getSecDataForDays('INFY', 18);
-    return data;
+const getSecRSI=async (symbol)=>{
+  const data = await getSecDataForDays(symbol, 30);
+  const itemsToBeRemoved= data.length-15;
+  data.splice(0,itemsToBeRemoved);
+  const closings = data.map(i=>i.Close);
+  const inputRSI={
+    values:closings,
+    period:14
   }
-  console.log('test');
-  getSecRSI().then(d=>console.log(d));
-  
-  //passing and failing % evaluator
-  const gainers = filteredData.filter((i) => i.NextDayMxGain > 1);
-  const reboundRate = Math.round((gainers.length * 100) / filteredData.length);
-  const fallrates=gainers.map(i=>i.WorstfallRate);
-  const maxfallRate = Number((Math.max.apply(Math,fallrates)).toFixed(2));
-  const minfallRate = Number((Math.min.apply(Math,fallrates)).toFixed(2));
-  const avgFallRate = Number((average(fallrates)).toFixed(2));
-  const openedLowerNextDay = filteredData.filter((i) => i.NextDayOpensLower).length;
-  
+  const currentData=data[14];
   return {
-    security,
-    reboundRate,
-    validity: noOfDays,
-    oppurtionities: gainers.length,
-    //data :gainers,  //uncomment if you need the data of the days and dates
-    maxfallRate,
-    minfallRate,
-    avgFallRate,
-    openedLowerNextDay
-  };
-};
+    'Symbol': symbol,
+    'RSI':RSI.calculate(inputRSI)[0],
+    'Date':currentData.Date,
+    'Open':currentData.Open,
+    'Close':currentData.Close,
+    'Low':currentData.Low,
+    'High':currentData.High,
+    'Volume':currentData.Volume
+  }
+}
 
+
+const getRSIForAllTopCompanies=async ()=>{
+  const allTop200Companies = await getTop200Companies();
+  const allTopRSIPromise = allTop200Companies.map(i=>getSecRSI(i.Symbol));
+  const rsiData=await Promise.all(allTopRSIPromise);
+  return rsiData;
+}
 
 
 const average = (array=[]) =>{ 
@@ -376,6 +329,5 @@ module.exports = {
   getMMI,
   getGainRankings,
   getQuote,
-  getTop200Companies,
-  getAllCompaniesReboundRates
+  getRSIForAllTopCompanies
 };
