@@ -262,12 +262,14 @@ const getSecRSI=async (symbol)=>{
       'Date':currentData.Date,
        'Open':currentData.Open,
        'Close':currentData.Close,
+       'PreviousClose':data[13].Close,
        'Low':currentData.Low,
        'High':currentData.High,
        'Volume':currentData.Volume
     }
   }
 }
+getSecRSI('INFY').then(d=>console.log(d));
 
 const getRSIForAllTopCompanies=async ()=>{
   const allTop200Companies = await getTop200Companies();
