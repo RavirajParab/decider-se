@@ -37,19 +37,29 @@ const CoverShortPosition=async (coverShort)=>{
                                 Symbol :coverShort.Symbol
                             })
                             .toArray();
-     let pl=0;                       
+     let pl=0;   
+     let principal =0;                    
     //calculate profit or loss
     shortsOfSymbol.forEach(i=>{
         pl+=i.Qty*(i.Buy-coverShort.SellPrice);
+        principal+=i.Qty*i.Buy;
     })
     if(pl>0){
         pl=0.9*pl
-    }     
+    }    
+    const finalAmount=principal+pl; 
     //add the Pl to the balance
     await client
     .db("DBDecider")
     .collection("Balance")
-    .findOneAndUpdate({ ID: 1 }, { $inc: { Balance: pl } });
+    .findOneAndUpdate({ ID: 1 }, { $inc: { Balance: finalAmount } });
+
+    //finally close the positions
+    await client
+    .db("DBDecider")
+    .collection("Shorts")
+    .findOneAndUpdate({ Symbol: coverShort.Symbol }, { $set: { Position: 'close' } });
+
 
 }
 
@@ -98,18 +108,26 @@ const AddShortPosition = async (shortPosition) => {
 const AllShorting=async (req)=>{
     const methodName = req.query.method;
     const data = req.query.data;
-    const decodedData=JSON.parse((Buffer.from(data, 'base64')).toString());
+    let buff=null;
+    let text =null;
+    let parsedData=null;
+    if(data){
+        buff = Buffer.from(data, 'base64');  
+        text = buff.toString('utf-8');
+        parsedData= JSON.parse(text);
+    }
+    
     if(methodName==='GetBalance'){
         const result = await GetBalance();
         return result;
     }else if(methodName==='GetShortPositions'){
         const result = await GetShortPositions();
         return result;
-    }else if(methodName=='AddShortPosition'){
-        const result = await AddShortPosition(decodedData);
+    }else if(methodName==='AddShortPosition'){
+        const result = await AddShortPosition(parsedData);
         return result;
-    }else if(methodName=='CoverShortPosition'){
-        const result = await CoverShortPosition(decodedData);
+    }else if(methodName==='CoverShortPosition'){
+        const result = await CoverShortPosition(parsedData);
         return result;
     }
     
