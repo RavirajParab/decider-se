@@ -95,9 +95,45 @@ const AddShortPosition = async (shortPosition) => {
   //return InsertedShort;
 };
 
+const AllShorting=async (req)=>{
+    const methodName = req.query.method;
+    const data = req.query.data;
+    const decodedData=JSON.parse((Buffer.from(data, 'base64')).toString());
+    if(methodName==='GetBalance'){
+        const result = await GetBalance();
+        return result;
+    }else if(methodName==='GetShortPositions'){
+        const result = await GetShortPositions();
+        return result;
+    }else if(methodName=='AddShortPosition'){
+        const result = await AddShortPosition(decodedData);
+        return result;
+    }else if(methodName=='CoverShortPosition'){
+        const result = await CoverShortPosition(decodedData);
+        return result;
+    }
+    
+}
+/*
+const shortPosition = {
+    Type: "short",
+    Symbol: "TCS",
+    Buy: 1879,
+    Qty: 2,
+    Position:'open'
+  };
+  const encoded=Buffer.from(JSON.stringify(shortPosition)).toString('base64');
+  
+  const decoded =JSON.parse((Buffer.from(encoded, 'base64')).toString());
+  console.log(decoded);
+
+/*
+AllShorting('GetShortPositions').then(d=>{
+    console.log(d);    
+});
+*/
+
+
 module.exports={
-    GetBalance,
-    AddShortPosition,
-    CoverShortPosition,
-    GetShortPositions
+    AllShorting
 }
