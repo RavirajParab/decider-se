@@ -35,7 +35,7 @@ const CoverShortPosition = async (coverShort) => {
     .db("DBDecider")
     .collection("Shorts")
     .find({
-      Position: "close",
+      Position: "open",
       Symbol: coverShort.Symbol,
     })
     .toArray();
@@ -61,10 +61,21 @@ const CoverShortPosition = async (coverShort) => {
     .db("DBDecider")
     .collection("Shorts")
     .findOneAndUpdate(
-      { Symbol: coverShort.Symbol },
+      { Symbol: coverShort.Symbol,
+        Position:'open' },
       { $set: { Position: "close" } }
     );
 };
+
+const DeleteClosedPositions=async ()=>{
+    const client = await Connect();
+    await client
+    .db("DBDecider")
+    .collection("Shorts")
+    .deleteMany({
+        Position :'close'
+    })
+}
 
 const GetBalance = async () => {
   const client = await Connect();
@@ -131,6 +142,9 @@ const AllShorting = async (req) => {
     return result;
   } else if (methodName === "CoverShortPosition") {
     const result = await CoverShortPosition(parsedData);
+    return result;
+  }else if (methodName === "DeleteClosedPositions") {
+    const result = await DeleteClosedPositions();
     return result;
   }
 };
