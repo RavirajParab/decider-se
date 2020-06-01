@@ -6,72 +6,74 @@ async function Connect() {
     "mongodb+srv://learner:learner@mycluster-2wsgs.azure.mongodb.net";
   const client = await MongoClient.connect(constring, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   });
   return client;
 }
 
-const GetShortPositions=async ()=>{
-    const client = await Connect();
-    const openPositions=await client.db('DBDecider')
-                                .collection('Shorts')
-                                .find({
-                                    Position:'open'
-                                })
-                                .toArray();
-    return openPositions;
-}
+const GetShortPositions = async () => {
+  const client = await Connect();
+  const openPositions = await client
+    .db("DBDecider")
+    .collection("Shorts")
+    .find({
+      Position: "open",
+    })
+    .toArray();
+  return openPositions;
+};
 
-const CoverShortPosition=async (coverShort)=>{
-    const client = await Connect();
-    /*
+const CoverShortPosition = async (coverShort) => {
+  const client = await Connect();
+  /*
     const coverShort ={
         Symbol :'INFY',
         SellPrice: 980
     }
     */
-    const shortsOfSymbol=await client.db('DBDecider')
-                            .collection('Shorts')
-                            .find({
-                                Position:'open',
-                                Symbol :coverShort.Symbol
-                            })
-                            .toArray();
-     let pl=0;   
-     let principal =0;                    
-    //calculate profit or loss
-    shortsOfSymbol.forEach(i=>{
-        pl+=i.Qty*(i.Buy-coverShort.SellPrice);
-        principal+=i.Qty*i.Buy;
+  const shortsOfSymbol = await client
+    .db("DBDecider")
+    .collection("Shorts")
+    .find({
+      Position: "close",
+      Symbol: coverShort.Symbol,
     })
-    if(pl>0){
-        pl=0.9*pl
-    }    
-    const finalAmount=principal+pl; 
-    //add the Pl to the balance
-    await client
+    .toArray();
+  let pl = 0;
+  let principal = 0;
+  //calculate profit or loss
+  shortsOfSymbol.forEach((i) => {
+    pl += i.Qty * (i.Buy - coverShort.SellPrice);
+    principal += i.Qty * i.Buy;
+  });
+  if (pl > 0) {
+    pl = 0.9 * pl;
+  }
+  const finalAmount = principal + pl;
+  //add the Pl to the balance
+  await client
     .db("DBDecider")
     .collection("Balance")
     .findOneAndUpdate({ ID: 1 }, { $inc: { Balance: finalAmount } });
 
-    //finally close the positions
-    await client
+  //finally close the positions
+  await client
     .db("DBDecider")
     .collection("Shorts")
-    .findOneAndUpdate({ Symbol: coverShort.Symbol }, { $set: { Position: 'close' } });
+    .findOneAndUpdate(
+      { Symbol: coverShort.Symbol },
+      { $set: { Position: "close" } }
+    );
+};
 
-
-}
-
-const GetBalance=async ()=>{
-    const client = await Connect();
-    const Balance=await client
+const GetBalance = async () => {
+  const client = await Connect();
+  const Balance = await client
     .db("DBDecider")
     .collection("Balance")
     .findOne({ ID: 1 });
-    return Balance.Balance;
-}
-
+  return Balance.Balance;
+};
 
 const AddShortPosition = async (shortPosition) => {
   const client = await Connect();
@@ -86,11 +88,12 @@ const AddShortPosition = async (shortPosition) => {
   };
   */
   //add the position
-  
-    const InsertedShort=await client.db('DBDecider')
-    .collection('Shorts')
+
+  const InsertedShort = await client
+    .db("DBDecider")
+    .collection("Shorts")
     .insertOne(shortPosition);
-    
+
   const balanceToBeDeducted = shortPosition.Buy * shortPosition.Qty;
 
   //add balance
@@ -105,33 +108,32 @@ const AddShortPosition = async (shortPosition) => {
   //return InsertedShort;
 };
 
-const AllShorting=async (req)=>{
-    const methodName = req.query.method;
-    const data = req.query.data;
-    let buff=null;
-    let text =null;
-    let parsedData=null;
-    if(data){
-        buff = Buffer.from(data, 'base64');  
-        text = buff.toString('utf-8');
-        parsedData= JSON.parse(text);
-    }
-    
-    if(methodName==='GetBalance'){
-        const result = await GetBalance();
-        return result;
-    }else if(methodName==='GetShortPositions'){
-        const result = await GetShortPositions();
-        return result;
-    }else if(methodName==='AddShortPosition'){
-        const result = await AddShortPosition(parsedData);
-        return result;
-    }else if(methodName==='CoverShortPosition'){
-        const result = await CoverShortPosition(parsedData);
-        return result;
-    }
-    
-}
+const AllShorting = async (req) => {
+  const methodName = req.query.method;
+  const data = req.query.data;
+  let buff = null;
+  let text = null;
+  let parsedData = null;
+  if (data) {
+    buff = Buffer.from(data, "base64");
+    text = buff.toString("utf-8");
+    parsedData = JSON.parse(text);
+  }
+
+  if (methodName === "GetBalance") {
+    const result = await GetBalance();
+    return result;
+  } else if (methodName === "GetShortPositions") {
+    const result = await GetShortPositions();
+    return result;
+  } else if (methodName === "AddShortPosition") {
+    const result = await AddShortPosition(parsedData);
+    return result;
+  } else if (methodName === "CoverShortPosition") {
+    const result = await CoverShortPosition(parsedData);
+    return result;
+  }
+};
 /*
 const shortPosition = {
     Type: "short",
@@ -151,7 +153,6 @@ AllShorting('GetShortPositions').then(d=>{
 });
 */
 
-
-module.exports={
-    AllShorting
-}
+module.exports = {
+  AllShorting,
+};
