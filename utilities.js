@@ -176,6 +176,11 @@ const getSecRSI = async (symbol) => {
       Open: currentData.Open,
       Close: currentData.Close,
       PreviousClose: data[13].Close,
+      YesterdayChange :Number(
+        (((data[13].Close - data[12].Close) * 100) / data[12].Close).toFixed(
+          2
+        )
+      ),
       Change: Number(
         (((currentData.Close - data[13].Close) * 100) / data[13].Close).toFixed(
           2
