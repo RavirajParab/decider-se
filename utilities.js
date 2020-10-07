@@ -1,6 +1,13 @@
 const fetch = require("node-fetch");
 const { RSI } = require("technicalindicators");
-
+const fixToDecimal=(data)=>{
+  if(data){
+      return Number(data.toFixed(2));
+  }
+  else{
+      return 0;
+  }
+}
 const getAVD = async () => {
   const url =
     "https://etmarketsapis.indiatimes.com/ET_Stats/getAllIndices?exchange=nse&sortby=value&sortorder=desc&pagesize=5000";
@@ -215,9 +222,52 @@ const getQuote = async (req) => {
   return res.data;
 };
 
+const getNiftyHundredETData = async ()=>{
+  const url = `https://json.bselivefeeds.indiatimes.com/ET_Community/liveindices?outputtype=json&indexid=2510&exchange=50&company=true&pagesize=100&sortby=percentchange&sortorder=desc`;
+  const resprom = await fetch(url);
+  const res = await resprom.json();
+  return res.searchresult.response;
+}
+
+const getNiftyETFData =async ()=>{
+  /* OLD CODE : DON NOT DELETE , FROM ET SITE
+  const rawData = await fetch('https://json.bselivefeeds.indiatimes.com/ET_Community/MFJsonController?pagesize=25&exchange=50&pageno=1&sortby=percentchange&sortorder=desc&marketcap=&filtervalue=all&category=all&callback=ajaxResponse');
+  const data = await rawData.text();
+  let modifiedText = data.replace(/[()]/g,'').replace('ajaxResponse','');
+  const result = JSON.parse(modifiedText);
+  return result.searchresult;
+  */
+ const ETFS=['N100','GBES','NBES','SBIF','NIPD','JBES','ICIV','NTFM'];
+        const ETFSPromArr = ETFS.map(i=>{
+            return fetch(`https://api.tickertape.in/stockwidget/internal/${i}`);
+        });
+        const ETFSResolved= await Promise.all(ETFSPromArr);
+        const ETFResolvedData = await Promise.all(ETFSResolved.map(i=>i.json()));
+        const ETFSFullData=ETFResolvedData.map(i=>i.data);
+        const ETFData=ETFSFullData.map((i,index)=>{
+            return {
+                name :i.info.name,
+                oname :ETFS[index],
+                ticker: i.info.ticker,
+                yhi: i.ratios['52wHigh'],
+                ylo: i.ratios['52wLow'],
+                beta: fixToDecimal(i.ratios.beta),
+                mcap: fixToDecimal(i.ratios.marketCap),
+                asset: fixToDecimal(i.ratios.asstUnderMan),
+                yrt: fixToDecimal(i.ratios.returns['1y']),
+                mrt: fixToDecimal(i.ratios.returns['1m']),
+                price: i.historical[i.historical.length-1].lp,
+                vol: i.historical[i.historical.length-1].v
+            }  
+        });
+    return ETFData;
+}
+
 module.exports = {
   getAVD,
   getMMI,
   getQuote,
   getRSIForAllTopCompanies,
+  getNiftyHundredETData,
+  getNiftyETFData
 };
