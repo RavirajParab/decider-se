@@ -21,6 +21,13 @@ const calculateRSI=(i,lq)=>{
   return RSIcal;
 }
 
+const getChange=(i,lq)=>{
+  const currPrice = lq.price;
+  const yestPrice = i.historical[i.historical.length-1].lp;
+  const change = currPrice/yestPrice;
+  return fixToDecimal(change);
+}
+
 const getAVD = async () => {
   const url =
     "https://etmarketsapis.indiatimes.com/ET_Stats/getAllIndices?exchange=nse&sortby=value&sortorder=desc&pagesize=5000";
@@ -277,7 +284,8 @@ const getNiftyETFData =async ()=>{
                 mrt: fixToDecimal(i.ratios.returns['1m']),
                 price: lq.price,//i.historical[i.historical.length-1].lp,
                 vol: lq.vol,//i.historical[i.historical.length-1].v
-                rsi: calculateRSI(i,lq)
+                rsi: calculateRSI(i,lq),
+                change: getChange(i,lq)
             }  
         });
     return ETFData;
