@@ -8,6 +8,19 @@ const fixToDecimal=(data)=>{
       return 0;
   }
 }
+const calculateRSI=(i,lq)=>{
+  const prevClosings= i.historical.map(m=>m.lp);
+  prevClosings.push(lq.price);
+  const itemsToBeRemoved = prevClosings.length - 15;
+  prevClosings.splice(0, itemsToBeRemoved);
+  const inputRSI = {
+      values: prevClosings,
+      period: 14,
+    };
+  const RSIcal =RSI.calculate(inputRSI)[0]
+  return RSIcal;
+}
+
 const getAVD = async () => {
   const url =
     "https://etmarketsapis.indiatimes.com/ET_Stats/getAllIndices?exchange=nse&sortby=value&sortorder=desc&pagesize=5000";
@@ -241,10 +254,16 @@ const getNiftyETFData =async ()=>{
         const ETFSPromArr = ETFS.map(i=>{
             return fetch(`https://api.tickertape.in/stockwidget/internal/${i}`);
         });
+
+        const quotes=await fetch(`https://quotes-api.tickertape.in/quotes?sids=${ETFS.join(',')}`)
+        const quotesData = await quotes.json();
+        const liveETFQuotes=quotesData.data;
+
         const ETFSResolved= await Promise.all(ETFSPromArr);
         const ETFResolvedData = await Promise.all(ETFSResolved.map(i=>i.json()));
         const ETFSFullData=ETFResolvedData.map(i=>i.data);
         const ETFData=ETFSFullData.map((i,index)=>{
+            const lq=liveETFQuotes[index];
             return {
                 name :i.info.name,
                 oname :ETFS[index],
@@ -256,8 +275,9 @@ const getNiftyETFData =async ()=>{
                 asset: fixToDecimal(i.ratios.asstUnderMan),
                 yrt: fixToDecimal(i.ratios.returns['1y']),
                 mrt: fixToDecimal(i.ratios.returns['1m']),
-                price: i.historical[i.historical.length-1].lp,
-                vol: i.historical[i.historical.length-1].v
+                price: lq.price,//i.historical[i.historical.length-1].lp,
+                vol: lq.vol,//i.historical[i.historical.length-1].v
+                rsi: calculateRSI(i,lq)
             }  
         });
     return ETFData;
